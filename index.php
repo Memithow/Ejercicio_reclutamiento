@@ -12,15 +12,14 @@
     $user = null;
 
     if (count($results) > 0) {
-      $user = $results;
-
-        $query = $conn->query('
-            SELECT count(color) AS cont, color
-                FROM users u 
-            GROUP BY color;');
-
+        $user = $results;
+        $query = $conn->query('SELECT count(color) AS cont, color FROM users u GROUP BY color ORDER BY color;');
         $query->execute();
         $data = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        $query_rows = $conn->query('SELECT email, color FROM users u;');
+        $query_rows->execute();
+        $rows = $query_rows->fetchAll(PDO::FETCH_ASSOC);
     }
   }
 ?>
@@ -35,21 +34,48 @@
 
     <h1 class="text-center">Bienvenido <span class="fw-normal"><?= $user['email'];?></span></h1>
 
+    <!-- HTML -->
+    <div id="chartdiv"></div>
+
+    <!--DataTables-->
+    <div class="row justify-content-center">
+        <div class="col-6">
+            <h3 class="text-center my-5">Usuarios registrados</h3>
+            <table id="tabla_usuarios" class="display" width="100%">
+                <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Color</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+
+
     <!-- Chart code -->
     <script>
-        const data = JSON.parse(<?php  echo "'".json_encode($data)."'";?>);
+        const rows_color = JSON.parse(<?php echo "'".json_encode($rows)."'";?>);
+        var data = JSON.parse(<?php  echo "'".json_encode($data)."'";?>);
+
+        $(document).ready(function() {
+            $('#tabla_usuarios').DataTable( {
+                data: rows_color,
+                columns: [
+                    { data: "email" },
+                    { data: "color" },
+                ]
+            } );
+        } );
 
         am5.ready(function() {
 
             var root = am5.Root.new("chartdiv");
 
-            root.setThemes([
-                am5themes_Animated.new(root)
-            ]);
-
             var chart = root.container.children.push(
                 am5percent.PieChart.new(root, {
-                    endAngle: 270
+                    endAngle: 270,
                 })
             );
 
@@ -57,24 +83,35 @@
                 am5percent.PieSeries.new(root, {
                     valueField: "cont",
                     categoryField: "color",
-                    endAngle: 270
+                    endAngle: 270,
                 })
             );
 
-            series.states.create("hidden", {
-                endAngle: -90
+            series.slices.template.setAll({
+                fillOpacity: 1,
+                stroke: am5.color(0xffffff),
+                strokeWidth: 2,
+                templateField: "columnSettings"
             });
+
+            for (let i = 0; i < data.length; i++) {
+                switch (data[i].color){
+                    case 'Rojo': data[i].columnSettings = {fill: am5.color(0xFF0000)}
+                    break;
+                    case 'Verde': data[i].columnSettings = {fill: am5.color(0x008000)}
+                    break;
+                    case 'Azul': data[i].columnSettings = {fill: am5.color(0x0000FF)}
+                    break
+                }
+            }
 
             series.data.setAll(data);
 
             series.appear(1000, 100);
 
-        }); // end am5.ready()
+        });
 
     </script>
-
-    <!-- HTML -->
-    <div id="chartdiv"></div>
 
 <?php else: ?>
 

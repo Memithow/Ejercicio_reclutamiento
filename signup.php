@@ -31,11 +31,11 @@
         <form action="signup.php" method="POST">
             <div class="mb-2">
                 <label for="" class="form-label">Email</label>
-                <input class="form-control" name="email" type="text" placeholder="Ingresa tu email">
+                <input class="form-control" name="email" type="text" placeholder="Ingresa tu email" required>
             </div>
             <div class="mb-2">
                 <label for="" class="form-label">Contraseña</label>
-                <input class="form-control" name="password" type="password" placeholder="Ingresa una contraseña">
+                <input class="form-control" name="password" type="password" placeholder="Ingresa una contraseña" required>
             </div>
             <div class="mb-2">
                 <label for="" class="form-label">Color</label>
